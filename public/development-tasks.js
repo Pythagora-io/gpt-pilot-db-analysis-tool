@@ -1,8 +1,14 @@
 import { fetchAndDisplayDevelopmentSteps } from './development-steps.js';
 
 function displayDevelopmentTasks(developmentTasks, appId, dbName) {
-  const tasksContainer = document.createElement('div');
-  tasksContainer.id = 'tasksContainer';
+  let tasksContainer = document.getElementById('tasksContainer');
+  if (!tasksContainer) {
+    tasksContainer = document.createElement('div');
+    tasksContainer.id = 'tasksContainer';
+  } else {
+    tasksContainer.innerHTML = ''; // Clear the existing tasks if any
+  }
+
   developmentTasks.forEach((task, index) => {
     const taskItem = document.createElement('div');
     taskItem.textContent = task.description;
@@ -13,12 +19,18 @@ function displayDevelopmentTasks(developmentTasks, appId, dbName) {
     });
     tasksContainer.appendChild(taskItem);
   });
-  const previousTasksContainer = document.getElementById('tasksContainer');
-  if (previousTasksContainer) {
-    previousTasksContainer.remove();
+
+  const appsContainer = document.getElementById('appsContainer');
+  if (appsContainer) {
+    const previousTasksContainer = appsContainer.querySelector('#tasksContainer');
+    if (previousTasksContainer) {
+      appsContainer.replaceChild(tasksContainer, previousTasksContainer);
+    } else {
+      appsContainer.appendChild(tasksContainer);
+    }
+  } else {
+    console.error('The appsContainer element was not found in the DOM.');
   }
-  const appsList = document.getElementById('appsList');
-  appsList.insertAdjacentElement('afterend', tasksContainer);
 }
 
 function fetchAndDisplayDevelopmentTasks(appId, dbName) {

@@ -1,4 +1,5 @@
 function displayDevelopmentSteps(developmentSteps, taskIndex, appId) {
+  console.log(`Adding stepsContainer to the DOM with ${developmentSteps.length} steps.`);
   const stepsContainer = document.createElement('div');
   stepsContainer.id = 'stepsContainer';
 
@@ -10,8 +11,10 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId) {
     promptPathElement.textContent = `Prompt Path: ${step.prompt_path}`;
     stepItemContainer.appendChild(promptPathElement);
 
-    if (step.messages) {
-      step.messages.forEach(message => {
+    // Parse messages if it is a string
+    const messages = typeof step.messages === 'string' ? JSON.parse(step.messages) : step.messages;
+    if (messages) {
+      messages.forEach(message => {
         const messageContentElement = document.createElement('textarea');
         messageContentElement.value = message.content;
         messageContentElement.readOnly = true;
@@ -24,16 +27,20 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId) {
       });
     }
 
-    if (step.llm_response) {
+    // Parse llm_response if it is a string
+    const llmResponse = typeof step.llm_response === 'string' ? JSON.parse(step.llm_response) : step.llm_response;
+    if (llmResponse) {
       const llmResponseTextArea = document.createElement('textarea');
-      llmResponseTextArea.value = step.llm_response.text;
+      llmResponseTextArea.value = llmResponse.text;
       llmResponseTextArea.readOnly = true;
       stepItemContainer.appendChild(llmResponseTextArea);
     }
 
+    // Parse prompt_data if it is a string
     const promptDataContainer = document.createElement('div');
-    if (step.prompt_data) {
-      Object.entries(step.prompt_data).forEach(([key, value]) => {
+    const promptData = typeof step.prompt_data === 'string' ? JSON.parse(step.prompt_data) : step.prompt_data;
+    if (promptData) {
+      Object.entries(promptData).forEach(([key, value]) => {
         const keyValueElement = document.createElement('div');
         keyValueElement.textContent = `${key}: ${value}`;
         promptDataContainer.appendChild(keyValueElement);
@@ -49,7 +56,11 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId) {
     previousStepsContainer.remove();
   }
   const tasksContainer = document.getElementById('tasksContainer');
-  tasksContainer.insertAdjacentElement('afterend', stepsContainer);
+  if (tasksContainer) {
+    tasksContainer.insertAdjacentElement('afterend', stepsContainer);
+  } else {
+    console.error('Failed to find tasksContainer for inserting the steps.');
+  }
 }
 
 function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
@@ -62,6 +73,9 @@ function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
     } else {
       alert('Failed to load development steps for the selected task');
     }
+  };
+  xhr.onerror = function() {
+    console.error('An error occurred during the Ajax request.');
   };
   xhr.send();
 }
