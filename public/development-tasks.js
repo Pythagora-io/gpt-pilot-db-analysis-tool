@@ -3,16 +3,23 @@ import { fetchAndDisplayDevelopmentSteps } from './development-steps.js';
 function displayDevelopmentTasks(developmentTasks, appId, dbName) {
   let tasksContainer = document.getElementById('tasksContainer');
   if (!tasksContainer) {
-    tasksContainer = document.createElement('div');
+    tasksContainer = document.createElement('ul');
     tasksContainer.id = 'tasksContainer';
+    tasksContainer.classList.add('list-group', 'mt-3');
   } else {
     tasksContainer.innerHTML = ''; // Clear the existing tasks if any
   }
+  
+  // Create and insert the 'Development Tasks' heading
+  const tasksHeading = document.createElement('h3');
+  tasksHeading.classList.add('mb-3');
+  tasksHeading.textContent = 'Development Tasks';
+  tasksContainer.before(tasksHeading); // Insert before the tasks list
 
   developmentTasks.forEach((task, index) => {
-    const taskItem = document.createElement('div');
+    const taskItem = document.createElement('li');
     taskItem.textContent = task.description;
-    taskItem.classList.add('task-item');
+    taskItem.classList.add('list-group-item', 'task-item');
     taskItem.dataset.taskIndex = index;
     taskItem.addEventListener('click', function() {
       fetchAndDisplayDevelopmentSteps(index, appId, dbName);
@@ -24,8 +31,11 @@ function displayDevelopmentTasks(developmentTasks, appId, dbName) {
   if (appsContainer) {
     const previousTasksContainer = appsContainer.querySelector('#tasksContainer');
     if (previousTasksContainer) {
+      // Insert the heading before the tasksContainer which replaces the previous container
+      appsContainer.insertBefore(tasksHeading, previousTasksContainer);
       appsContainer.replaceChild(tasksContainer, previousTasksContainer);
     } else {
+      appsContainer.appendChild(tasksHeading);
       appsContainer.appendChild(tasksContainer);
     }
   } else {

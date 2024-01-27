@@ -1,3 +1,5 @@
+import { fetchAndDisplayDevelopmentTasks } from './development-tasks.js';
+
 function fetchAndDisplayApps(databaseName) {
   const xhr = new XMLHttpRequest();
   xhr.open('GET', '/apps?db=' + encodeURIComponent(databaseName), true);
@@ -13,31 +15,33 @@ function fetchAndDisplayApps(databaseName) {
 }
 
 function displayApps(apps, databaseName) {
-  const appsList = document.createElement('div');
+  const appsContainer = document.getElementById('appsContainer');
+  let appsList = document.getElementById('appsList');
+  if (appsList) {
+    appsList.remove();
+  }
+
+  const appsHeading = document.createElement('h3');
+  appsHeading.textContent = 'Apps';
+  appsHeading.classList.add('mb-3');
+  appsContainer.appendChild(appsHeading);
+
+  appsList = document.createElement('ul');
   appsList.id = 'appsList';
+  appsList.classList.add('list-group');
+
   apps.forEach(function(app) {
-    const appItem = document.createElement('div');
+    const appItem = document.createElement('li');
     appItem.textContent = app.name;
     appItem.id = 'app_' + app.id;
-    appItem.classList.add('app-item'); // Add a class for CSS styling
-    appItem.dataset.appId = app.id; // Store app ID
-
-    // Add event listener to each app item to fetch and display development tasks
+    appItem.classList.add('list-group-item', 'app-item');
+    appItem.dataset.appId = app.id;
     appItem.addEventListener('click', function() {
-      fetchAndDisplayDevelopmentTasks(app.id, databaseName); // Fetch and display tasks when app item is clicked
+      fetchAndDisplayDevelopmentTasks(app.id, databaseName);
     });
-
     appsList.appendChild(appItem);
   });
-  const previousAppsList = document.getElementById('appsList');
-  if (previousAppsList) {
-    previousAppsList.remove();
-  }
-  const existingDbsElement = document.getElementById('existingDbs');
-  existingDbsElement.insertAdjacentElement('afterend', appsList);
+  appsContainer.appendChild(appsList);
 }
-
-// Assume fetchAndDisplayDevelopmentTasks is defined in another module and imported here
-import { fetchAndDisplayDevelopmentTasks } from './development-tasks.js';
 
 export { fetchAndDisplayApps, fetchAndDisplayDevelopmentTasks };

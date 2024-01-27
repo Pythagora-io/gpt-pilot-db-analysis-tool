@@ -4,33 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SQLite DB Analysis Tool</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  <div>
-    <label for="existingDbs">Select a database:</label>
-    <select id="existingDbs">
-      <option value="">--Select a database--</option>
-      <!-- Database options will be added here -->
-    </select>
+
+<div class="container mt-3">
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="existingDbs">Select a database:</label>
+      <select id="existingDbs" class="form-control">
+        <option value="">--Select a database--</option>
+        <!-- Database options will be added here -->
+      </select>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="dbName">Database Name:</label>
+          <input type="text" id="dbName" name="dbname" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="dbFile">SQLite Database File:</label>
+          <input type="file" id="dbFile" name="dbfile" class="form-control-file" accept=".sqlite,.db" required>
+        </div>
+      
+        <button type="submit" class="btn btn-primary">Upload</button>
+      </form>
+    </div>
   </div>
-  <br>
-  <div id="appsContainer">
+
+  <div id="appsContainer" class="mt-3">
     <!-- This is where the app list will be rendered by JavaScript -->
   </div>
-  <br>
-  <form id="uploadForm" enctype="multipart/form-data">
-    <label for="dbName">Database Name:</label>
-    <input type="text" id="dbName" name="dbname" required>
-    <br><br>
-    <label for="dbFile">SQLite Database File:</label>
-    <input type="file" id="dbFile" name="dbfile" accept=".sqlite,.db" required>
-    <br><br>
-    <button type="submit">Upload</button>
-  </form>
+</div>
 
-  <!-- Inserted below are the currently implemented script tags along with the new development-steps.js script -->
-  <script type="module" src="database-selection.js"></script>
-  <script type="module" src="upload-handler.js"></script>
-  <script type="module" src="development-steps.js"></script>
+<!-- Inserted below are the currently implemented script tags along with the new development-steps.js script -->
+<script type="module" src="database-selection.js"></script>
+<script type="module" src="upload-handler.js"></script>
+<script type="module" src="development-steps.js"></script>
 </body>
 </html>
