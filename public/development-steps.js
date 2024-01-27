@@ -1,4 +1,4 @@
-function displayDevelopmentSteps(developmentSteps, taskIndex, appId) {
+function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
   const stepsContainer = document.createElement('div');
   stepsContainer.id = 'stepsContainer';
   stepsContainer.classList.add('mt-3');
@@ -19,6 +19,10 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId) {
     promptPathElement.textContent = step.prompt_path;
     promptPathElement.classList.add('card-title');
     cardBody.appendChild(promptPathElement);
+
+    stepItemContainer.addEventListener('click', function() {
+      fetchAndDisplayDevelopmentStepDetails(step.id, dbName);
+    });
 
     // Parse messages if it is a string
     const messages = typeof step.messages === 'string' ? JSON.parse(step.messages) : step.messages;
@@ -81,13 +85,84 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId) {
   }
 }
 
+function fetchAndDisplayDevelopmentStepDetails(stepId, dbName) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', `/development_step?id=${encodeURIComponent(stepId)}&db=${encodeURIComponent(dbName)}`, true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      const stepDetails = JSON.parse(xhr.responseText);
+      displayDevelopmentStepDetails(stepDetails);
+    } else {
+      alert('Failed to load development step details');
+    }
+  };
+  xhr.onerror = function() {
+    console.error('An error occurred during the Ajax request.');
+  };
+  xhr.send();
+}
+
+function displayDevelopmentStepDetails(stepDetails) {
+  const stepDetailsContainer = document.createElement('div');
+  stepDetailsContainer.id = 'stepDetailsContainer';
+  stepDetailsContainer.classList.add('mt-3');
+
+  // Display messages
+  const messagesHeading = document.createElement('h4');
+  messagesHeading.textContent = 'Messages';
+  stepDetailsContainer.appendChild(messagesHeading);
+
+  stepDetails.messages.forEach(message => {
+    const messageRoleElement = document.createElement('h5');
+    messageRoleElement.textContent = `Role: ${message.role}`;
+    stepDetailsContainer.appendChild(messageRoleElement);
+
+    const messageContentElement = document.createElement('textarea');
+    messageContentElement.value = message.content;
+    messageContentElement.readOnly = true;
+    messageContentElement.classList.add('form-control', 'mb-2');
+    stepDetailsContainer.appendChild(messageContentElement);
+  });
+
+  // Display llm_response
+  const llmResponseHeading = document.createElement('h4');
+  llmResponseHeading.textContent = 'LLM Response';
+  stepDetailsContainer.appendChild(llmResponseHeading);
+
+  const llmResponseElement = document.createElement('textarea');
+  llmResponseElement.value = stepDetails.llm_response.text;
+  llmResponseElement.readOnly = true;
+  llmResponseElement.classList.add('form-control', 'mb-2');
+  stepDetailsContainer.appendChild(llmResponseElement);
+
+  // Display prompt_data
+  const promptDataHeading = document.createElement('h4');
+  promptDataHeading.textContent = 'Prompt Data';
+  stepDetailsContainer.appendChild(promptDataHeading);
+  
+  Object.entries(stepDetails.prompt_data).forEach(([key, value]) => {
+    const dataElement = document.createElement('p');
+    dataElement.textContent = `${key}: ${value}`;
+    stepDetailsContainer.appendChild(dataElement);
+  });
+
+  // Replace existing stepDetailsContainer if present, otherwise append
+  const appsContainer = document.getElementById('appsContainer');
+  const previousStepDetailsContainer = document.getElementById('stepDetailsContainer');
+  if (previousStepDetailsContainer) {
+    appsContainer.replaceChild(stepDetailsContainer, previousStepDetailsContainer);
+  } else {
+    appsContainer.appendChild(stepDetailsContainer);
+  }
+}
+
 function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
   const xhr = new XMLHttpRequest();
   xhr.open('GET', `/development_steps?task_index=${encodeURIComponent(taskIndex)}&app_id=${encodeURIComponent(appId)}&db=${encodeURIComponent(dbName)}`, true);
   xhr.onload = function() {
     if (xhr.status === 200) {
       const developmentSteps = JSON.parse(xhr.responseText);
-      displayDevelopmentSteps(developmentSteps, taskIndex, appId);
+      displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName);
     } else {
       alert('Failed to load development steps for the selected task');
     }
