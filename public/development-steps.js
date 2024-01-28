@@ -93,7 +93,7 @@ function fetchAndDisplayDevelopmentStepDetails(stepId, dbName) {
       const stepDetails = JSON.parse(xhr.responseText);
       displayDevelopmentStepDetails(stepDetails);
     } else {
-      alert('Failed to load development step details');
+      console.error('Failed to load development step details');
     }
   };
   xhr.onerror = function() {
@@ -161,16 +161,49 @@ function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
   xhr.open('GET', `/development_steps?task_index=${encodeURIComponent(taskIndex)}&app_id=${encodeURIComponent(appId)}&db=${encodeURIComponent(dbName)}`, true);
   xhr.onload = function() {
     if (xhr.status === 200) {
-      const developmentSteps = JSON.parse(xhr.responseText);
-      displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName);
+      const response = JSON.parse(xhr.responseText);
+      // Check if the response array is empty or contains the specific 'out of bounds' message
+      if (response.length === 0 || (typeof response === 'string' && response.includes('Development task index out of bounds'))) {
+        displayNoDevelopmentStepsMessage();
+      } else {
+        displayDevelopmentSteps(response, taskIndex, appId, dbName);
+      }
     } else {
-      alert('Failed to load development steps for the selected task');
+      console.error('Failed to load development steps for the selected task');
+      displayNoDevelopmentStepsMessage(); // We invoke the message display for any non-200 status as well.
     }
   };
   xhr.onerror = function() {
     console.error('An error occurred during the Ajax request.');
+    displayNoDevelopmentStepsMessage(); // Display message on request error as well.
   };
   xhr.send();
+}
+
+function displayNoDevelopmentStepsMessage() {
+  let stepsContainer = document.getElementById('stepsContainer');
+  if (!stepsContainer) {
+    stepsContainer = document.createElement('div');
+    stepsContainer.id = 'stepsContainer';
+    stepsContainer.classList.add('mt-3');
+  
+    const heading = document.createElement('h3');
+    heading.textContent = 'Development Steps';
+    stepsContainer.appendChild(heading);
+
+    const appsContainer = document.getElementById('appsContainer');
+    appsContainer.appendChild(stepsContainer);
+  }
+
+  stepsContainer.innerHTML = '';
+  
+  const heading = document.createElement('h3');
+  heading.textContent = 'Development Steps';
+  stepsContainer.appendChild(heading);
+
+  const noStepsMessage = document.createElement('p');
+  noStepsMessage.textContent = 'No development steps found for this task.';
+  stepsContainer.appendChild(noStepsMessage);
 }
 
 export { fetchAndDisplayDevelopmentSteps, displayDevelopmentSteps };
