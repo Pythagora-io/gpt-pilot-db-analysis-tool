@@ -42,7 +42,7 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
         messageContentElement.value = message.content;
         messageContentElement.classList.add('form-control', 'mb-1', 'message-content');
         messageContentElement.setAttribute('data-index', index);
-        messageContentElement.setAttribute('data-role', message.role); // Ensure role is set properly
+        messageContentElement.setAttribute('data-role', message.role || 'user'); // Set 'user' as default role if missing
 
         const messageRoleLabel = document.createElement('h6');
         messageRoleLabel.textContent = `Role: ${message.role}`;
@@ -103,11 +103,24 @@ function createSubmitButton(stepId) {
   submitButton.classList.add('btn', 'btn-primary', 'mt-2');
   submitButton.setAttribute('data-step-id', stepId.toString());
   submitButton.addEventListener('click', () => {
-    const messageContents = Array.from(document.querySelectorAll(`#collapseStep${stepId} .message-content`)).map(textarea => ({
-      content: textarea.value,
-      role: textarea.getAttribute('data-role')
-    }));
-    submitMessages(stepId, messageContents);
+    try {
+      const messageContents = Array.from(document.querySelectorAll(`#collapseStep${stepId} .message-content`)).map(textarea => {
+        const role = textarea.getAttribute('data-role');
+        
+        if (!role) {
+          throw new Error(`Missing role for message with content: ${textarea.value}`);
+        }
+  
+        return {
+          content: textarea.value,
+          role: role
+        };
+      });
+      submitMessages(stepId, messageContents);
+    } catch (error) {
+      console.error('Error preparing messages for submission:', error);
+      alert('Error: One or more messages are missing a role. Please refresh the page and try again.');
+    }
   });
   return submitButton;
 }

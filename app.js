@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -7,7 +8,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const developmentPlansRouter = require('./routes/developmentPlans');
 const developmentStepsRouter = require('./routes/developmentSteps');
-const { simulateOpenAIResponse } = require('./openai-handler');
+const { handleOpenAIMessage } = require('./handlers/openaiMessageHandler');
 const app = express();
 
 app.use(express.static('public'));
@@ -96,18 +97,7 @@ app.get('/apps', (req, res) => {
 app.use(developmentPlansRouter);
 app.use(developmentStepsRouter);
 
-app.post('/submit_messages', (req, res) => {
-  const { messages } = req.body;
-
-  simulateOpenAIResponse(messages)
-    .then(apiResponse => {
-      res.json(apiResponse);
-    })
-    .catch(error => {
-      console.error(error);
-      res.status(503).send('Service unavailable. Could not reach the OpenAI GPT-4 API.');
-    });
-});
+app.post('/submit_messages', handleOpenAIMessage);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
