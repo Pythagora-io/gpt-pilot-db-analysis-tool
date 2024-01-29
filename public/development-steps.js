@@ -127,12 +127,19 @@ function createSubmitButton(stepId) {
 
 function submitMessages(stepId, messages) {
   const data = { messages };
+  const submitButton = document.querySelector(`button[data-step-id="${stepId}"]`);
+  const spinner = showSpinner(stepId, true);
+  submitButton.disabled = true;
+  submitButton.after(spinner);
+
   fetch(`/submit_messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
   .then(response => {
+    showSpinner(stepId, false);
+    submitButton.disabled = false;
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -145,8 +152,32 @@ function submitMessages(stepId, messages) {
     displayOpenAIResponse(stepId, responseData);
   })
   .catch(error => {
+    showSpinner(stepId, false);
+    submitButton.disabled = false;
     displayApiError(error, stepId);
   });
+}
+
+function showSpinner(stepId, shouldShow) {
+  let spinner = document.querySelector(`#spinner-${stepId}`);
+  
+  if (shouldShow) {
+    if (!spinner) {
+      spinner = document.createElement('div');
+      spinner.id = `spinner-${stepId}`;
+      spinner.classList.add('spinner-border', 'text-primary', 'mt-2');
+      spinner.setAttribute('role', 'status');
+      const spinnerLabel = document.createElement('span');
+      spinnerLabel.classList.add('sr-only');
+      spinnerLabel.textContent = 'Loading...';
+      spinner.appendChild(spinnerLabel);
+    }
+    spinner.style.display = 'inline-block';
+  } else if (spinner) {
+    spinner.style.display = 'none';
+  }
+
+  return spinner;
 }
 
 function displayOpenAIResponse(stepId, responseData) {
