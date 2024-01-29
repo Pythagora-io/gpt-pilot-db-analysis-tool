@@ -35,18 +35,22 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
     if (messages) {
       const messagesContainer = document.createElement('div');
       messagesContainer.classList.add('mb-2');
-      messages.forEach(message => {
+      messages.forEach((message, index) => {
         const messageContentElement = document.createElement('textarea');
         messageContentElement.value = message.content;
-        messageContentElement.classList.add('form-control', 'mb-1');
-    
+        messageContentElement.classList.add('form-control', 'mb-1', 'message-content');
+        messageContentElement.setAttribute('data-index', index);
+
         const messageRoleLabel = document.createElement('h6');
         messageRoleLabel.textContent = `Role: ${message.role}`;
         messageRoleLabel.classList.add('mb-1');
-    
+
         messagesContainer.appendChild(messageRoleLabel);
         messagesContainer.appendChild(messageContentElement);
       });
+
+      const submitButton = createSubmitButton(step.id);
+      messagesContainer.appendChild(submitButton);
       collapseDiv.appendChild(messagesContainer);
     }
     
@@ -90,73 +94,21 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
   }
 }
 
-function fetchAndDisplayDevelopmentStepDetails(stepId, dbName) {
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', `/development_step?id=${encodeURIComponent(stepId)}&db=${encodeURIComponent(dbName)}`, true);
-  xhr.onload = function() {
-    if (xhr.status === 200) {
-      const stepDetails = JSON.parse(xhr.responseText);
-      displayDevelopmentStepDetails(stepDetails);
-    } else {
-      console.error('Failed to load development step details');
-    }
-  };
-  xhr.onerror = function() {
-    console.error('An error occurred during the Ajax request.');
-  };
-  xhr.send();
-}
-
-function displayDevelopmentStepDetails(stepDetails) {
-  const stepDetailsContainer = document.createElement('div');
-  stepDetailsContainer.id = 'stepDetailsContainer';
-  stepDetailsContainer.classList.add('mt-3');
-
-  // Display messages
-  const messagesHeading = document.createElement('h4');
-  messagesHeading.textContent = 'Messages';
-  stepDetailsContainer.appendChild(messagesHeading);
-
-  stepDetails.messages.forEach(message => {
-    const messageRoleElement = document.createElement('h5');
-    messageRoleElement.textContent = `Role: ${message.role}`;
-    stepDetailsContainer.appendChild(messageRoleElement);
-
-    const messageContentElement = document.createElement('textarea');
-    messageContentElement.value = message.content;
-    messageContentElement.classList.add('form-control', 'mb-2');
-    stepDetailsContainer.appendChild(messageContentElement);
+function createSubmitButton(stepId) {
+  const submitButton = document.createElement('button');
+  submitButton.textContent = 'Submit';
+  submitButton.classList.add('btn', 'btn-primary', 'mt-2');
+  submitButton.addEventListener('click', () => {
+    const messageContents = Array.from(document.querySelectorAll(`#collapseStep${stepId} .message-content`)).map(textarea => ({
+      content: textarea.value,
+      index: textarea.getAttribute('data-index')
+    }));
+    console.log({
+      stepId: stepId,
+      messages: messageContents
+    });
   });
-
-  // Display llm_response
-  const llmResponseHeading = document.createElement('h4');
-  llmResponseHeading.textContent = 'LLM Response';
-  stepDetailsContainer.appendChild(llmResponseHeading);
-
-  const llmResponseElement = document.createElement('textarea');
-  llmResponseElement.value = stepDetails.llm_response.text;
-  llmResponseElement.classList.add('form-control', 'mb-2');
-  stepDetailsContainer.appendChild(llmResponseElement);
-
-  // Display prompt_data
-  const promptDataHeading = document.createElement('h4');
-  promptDataHeading.textContent = 'Prompt Data';
-  stepDetailsContainer.appendChild(promptDataHeading);
-  
-  Object.entries(stepDetails.prompt_data).forEach(([key, value]) => {
-    const dataElement = document.createElement('p');
-    dataElement.textContent = `${key}: ${value}`;
-    stepDetailsContainer.appendChild(dataElement);
-  });
-
-  // Replace existing stepDetailsContainer if present, otherwise append
-  const appsContainer = document.getElementById('appsContainer');
-  const previousStepDetailsContainer = document.getElementById('stepDetailsContainer');
-  if (previousStepDetailsContainer) {
-    appsContainer.replaceChild(stepDetailsContainer, previousStepDetailsContainer);
-  } else {
-    appsContainer.appendChild(stepDetailsContainer);
-  }
+  return submitButton;
 }
 
 function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
@@ -165,7 +117,6 @@ function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
   xhr.onload = function() {
     if (xhr.status === 200) {
       const response = JSON.parse(xhr.responseText);
-      // Check if the response array is empty or contains the specific 'out of bounds' message
       if (response.length === 0 || (typeof response === 'string' && response.includes('Development task index out of bounds'))) {
         displayNoDevelopmentStepsMessage();
       } else {
@@ -173,12 +124,12 @@ function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
       }
     } else {
       console.error('Failed to load development steps for the selected task');
-      displayNoDevelopmentStepsMessage(); // We invoke the message display for any non-200 status as well.
+      displayNoDevelopmentStepsMessage();
     }
   };
   xhr.onerror = function() {
     console.error('An error occurred during the Ajax request.');
-    displayNoDevelopmentStepsMessage(); // Display message on request error as well.
+    displayNoDevelopmentStepsMessage();
   };
   xhr.send();
 }
@@ -209,4 +160,4 @@ function displayNoDevelopmentStepsMessage() {
   stepsContainer.appendChild(noStepsMessage);
 }
 
-export { fetchAndDisplayDevelopmentSteps, displayDevelopmentSteps };
+export { fetchAndDisplayDevelopmentSteps, displayDevelopmentSteps, createSubmitButton };
