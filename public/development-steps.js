@@ -128,37 +128,79 @@ function createSubmitButton(stepId) {
 function submitMessages(stepId, messages) {
   const data = { messages };
   fetch(`/submit_messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
   })
   .then(response => {
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
     return response.json();
   })
   .then(responseData => {
+    if (responseData.error) {
+      throw new Error(responseData.error.message);
+    }
     displayOpenAIResponse(stepId, responseData);
   })
   .catch(error => {
-    console.error('There was a problem with the fetch operation:', error);
+    displayApiError(error, stepId);
   });
 }
 
 function displayOpenAIResponse(stepId, responseData) {
-  const stepCollapse = document.querySelector(`#collapseStep${stepId}`);
-  const existingAIResponseTextarea = stepCollapse.querySelector('.ai-response-textarea');
-  if (existingAIResponseTextarea) {
-    existingAIResponseTextarea.remove();
+  console.log('Response Data:', responseData); // Added for debugging
+  // Combine 'message.content' for all elements of 'choices' array into a single message
+  let combinedMessage = '';
+  if (responseData.choices && responseData.choices.length) {
+    combinedMessage = responseData.choices.map(choice => choice.message.content).join("\n");
   }
-  const aiResponse = responseData.choices[0].text;
-  const aiResponseTextarea = document.createElement('textarea');
-  aiResponseTextarea.classList.add('form-control', 'ai-response-textarea', 'mt-2');
-  aiResponseTextarea.disabled = true;
-  aiResponseTextarea.value = aiResponse;
-  const submitButton = stepCollapse.querySelector(`button[data-step-id="${stepId}"]`);
-  insertAfter(aiResponseTextarea, submitButton);
+  const aiResponseTextarea = createOrUpdateTextArea(`ai-response-textarea-${stepId}`, combinedMessage, true);
+
+  const submitButton = document.querySelector(`button[data-step-id="${stepId}"]`);
+  // Changes start: Ensure correct positioning of the response textarea
+  if (submitButton) {
+    let textareaAfterSubmit = submitButton.nextElementSibling;
+    if (textareaAfterSubmit && textareaAfterSubmit.id === `ai-response-textarea-${stepId}`) {
+      // If textarea exists after the submit button, update it
+      textareaAfterSubmit.value = aiResponse;
+    } else {
+      // If no textarea exists, create it and insert it after the submit button
+      if (textareaAfterSubmit) {
+        // Ensure the new textarea is inserted between the submit button and any subsequent elements
+        submitButton.parentElement.insertBefore(aiResponseTextarea, textareaAfterSubmit);
+      } else {
+        // If submit button is the last child, just append the new textarea
+        submitButton.parentElement.appendChild(aiResponseTextarea);
+      }
+    }
+  }
+  // Changes end
+}
+
+function createOrUpdateTextArea(id, value, disabled) {
+  let textarea = document.getElementById(id);
+  if (!textarea) {
+    textarea = document.createElement('textarea');
+    textarea.id = id;
+    textarea.classList.add('form-control', 'mt-2', 'ai-response-textarea');
+  }
+  textarea.value = value;
+  textarea.disabled = disabled;
+  return textarea;
+}
+
+function displayApiError(error, stepId) {
+  const errorMessage = `Error: ${error.message}`;
+  const errorTextarea = createOrUpdateTextArea(`ai-response-textarea-${stepId}`, errorMessage, true);
+
+  const submitButton = document.querySelector(`button[data-step-id="${stepId}"]`);
+  if (submitButton.nextSibling && submitButton.nextSibling.id === `ai-response-textarea-${stepId}`) {
+    submitButton.nextSibling.value = errorMessage;
+  } else {
+    submitButton.after(errorTextarea);
+  }
 }
 
 function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
