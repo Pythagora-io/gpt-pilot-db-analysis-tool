@@ -4,6 +4,7 @@ import { initializeUploadForm } from './upload-handler.js';
 const existingDbsSelect = document.getElementById('existingDbs');
 
 function fetchDatabasesAndPopulateDropdown() {
+  console.log('fetchDatabasesAndPopulateDropdown called'); // New line added for debugging
   const xhr = new XMLHttpRequest();
   xhr.open('GET', '/databases', true);
   xhr.onload = function() {

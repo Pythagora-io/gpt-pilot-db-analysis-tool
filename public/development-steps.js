@@ -15,15 +15,21 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
     cardBody.classList.add('card-body');
     stepItemContainer.appendChild(cardBody);
 
-    const promptPathElement = document.createElement('h5');
-    promptPathElement.textContent = step.prompt_path;
-    promptPathElement.classList.add('card-title');
-    cardBody.appendChild(promptPathElement);
-
-    stepItemContainer.addEventListener('click', function() {
-      fetchAndDisplayDevelopmentStepDetails(step.id, dbName);
-    });
-
+    const promptPathButton = document.createElement('button');
+    promptPathButton.classList.add('btn', 'btn-link');
+    promptPathButton.setAttribute('type', 'button');
+    promptPathButton.setAttribute('data-toggle', 'collapse');
+    promptPathButton.setAttribute('data-target', `#collapseStep${step.id}`);
+    promptPathButton.setAttribute('aria-expanded', 'false');
+    promptPathButton.setAttribute('aria-controls', `collapseStep${step.id}`);
+    promptPathButton.textContent = step.prompt_path;
+    promptPathButton.classList.add('card-title');
+    cardBody.appendChild(promptPathButton);
+    
+    const collapseDiv = document.createElement('div');
+    collapseDiv.id = `collapseStep${step.id}`;
+    collapseDiv.classList.add('collapse');
+    
     // Parse messages if it is a string
     const messages = typeof step.messages === 'string' ? JSON.parse(step.messages) : step.messages;
     if (messages) {
@@ -32,19 +38,18 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
       messages.forEach(message => {
         const messageContentElement = document.createElement('textarea');
         messageContentElement.value = message.content;
-        messageContentElement.readOnly = true;
         messageContentElement.classList.add('form-control', 'mb-1');
-
+    
         const messageRoleLabel = document.createElement('h6');
         messageRoleLabel.textContent = `Role: ${message.role}`;
         messageRoleLabel.classList.add('mb-1');
-
+    
         messagesContainer.appendChild(messageRoleLabel);
         messagesContainer.appendChild(messageContentElement);
       });
-      cardBody.appendChild(messagesContainer);
+      collapseDiv.appendChild(messagesContainer);
     }
-
+    
     // Parse llm_response if it is a string
     const llmResponse = typeof step.llm_response === 'string' ? JSON.parse(step.llm_response) : step.llm_response;
     if (llmResponse) {
@@ -53,13 +58,12 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
       llmResponseTextTitle.classList.add('mb-1');
       const llmResponseTextArea = document.createElement('textarea');
       llmResponseTextArea.value = llmResponse.text;
-      llmResponseTextArea.readOnly = true;
       llmResponseTextArea.classList.add('form-control');
-      cardBody.appendChild(llmResponseTextTitle);
-      cardBody.appendChild(llmResponseTextArea);
+      collapseDiv.appendChild(llmResponseTextTitle);
+      collapseDiv.appendChild(llmResponseTextArea);
     }
 
-    // Parse prompt_data if it is a string
+    // Parse prompt_data if it is a string and add to collapsible div
     const promptData = typeof step.prompt_data === 'string' ? JSON.parse(step.prompt_data) : step.prompt_data;
     if (promptData) {
       const promptDataContainer = document.createElement('div');
@@ -70,9 +74,10 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
         keyValueElement.classList.add('card-text');
         promptDataContainer.appendChild(keyValueElement);
       });
-      cardBody.appendChild(promptDataContainer);
+      collapseDiv.appendChild(promptDataContainer);
     }
-
+    
+    cardBody.appendChild(collapseDiv);
     stepsContainer.appendChild(stepItemContainer);
   });
 
@@ -119,7 +124,6 @@ function displayDevelopmentStepDetails(stepDetails) {
 
     const messageContentElement = document.createElement('textarea');
     messageContentElement.value = message.content;
-    messageContentElement.readOnly = true;
     messageContentElement.classList.add('form-control', 'mb-2');
     stepDetailsContainer.appendChild(messageContentElement);
   });
@@ -131,7 +135,6 @@ function displayDevelopmentStepDetails(stepDetails) {
 
   const llmResponseElement = document.createElement('textarea');
   llmResponseElement.value = stepDetails.llm_response.text;
-  llmResponseElement.readOnly = true;
   llmResponseElement.classList.add('form-control', 'mb-2');
   stepDetailsContainer.appendChild(llmResponseElement);
 
