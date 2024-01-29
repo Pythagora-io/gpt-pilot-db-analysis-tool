@@ -1,51 +1,52 @@
 # SQLite Database Analysis Tool
 
-The SQLite Database Analysis Tool is an application designed to facilitate the viewing and analysis of data stored within a SQLite database. The tool comes with a web-based front-end and a backend server to parse and present the data in an organized manner.
+The SQLite Database Analysis Tool is an application designed to provide comprehensive analysis of SQLite databases. It allows users to upload, view, and analyze data stored in SQLite database files.
 
 ## Features
 
-- Upload a SQLite database file and store it on the server for future use.
-- Browse previously uploaded database files.
-- View all the apps defined in the uploaded database.
-- Navigate through and analyze specific development tasks and their associated development steps for each app.
-- Present detailed information about development steps including messages, responses from LLM (Language Learning Models), and prompt data.
+- **Database Upload**: Upload and store SQLite databases on the server for later access.
+- **Database Selection**: Select a database from a dropdown of previously uploaded databases or upload a new one.
+- **Data Interaction**: Interact with uploaded databases to:
+  - View listed apps.
+  - Explore development tasks associated with an app.
+  - Examine development steps within a development task.
+- **Data Presentation**: Display detailed information including prompt paths, messages, responses from language learning models (LLMs), and prompt data.
 
-## Database Structure
+## Prerequisites
 
-The SQLite database expected by the tool should follow this predefined structure:
+- Node.js
+- npm package manager
 
-- An `app` table containing records of all apps.
-- A `development_planning` table where each app's multiple development tasks are stored as an array in the JSON key `development_plan`.
-- A `development_steps` table where every development step is linked to its corresponding app by an `app_id` key.
+## Local Setup
 
-## Getting Started
+1. Clone this repository to your local machine.
+2. Install dependencies with `npm install`.
+3. Start the application using `npm start`. The application will be available at `http://localhost:3000`.
 
-1. Clone the repository to your local machine.
-2. Navigate to the root directory of the project and run `npm install` to install all the required dependencies.
-3. Start the server by running the command `npm start`. The app will now be running on the default port 3000 unless specified otherwise.
+## Project Structure
+
+- The SQLite database should have the following tables:
+  - `app`
+  - `development_planning`
+  - `development_steps`
+
+## API Reference
+
+- `POST /upload`: Upload a SQLite database file.
+- `GET /databases`: List available databases.
+- `GET /apps`: List all apps from a database.
+- `GET /development_plans`: Get development plans for an app based on its ID.
+- `GET /development_steps`: Retrieve development steps for a specific development task.
 
 ## Usage
 
-After starting the server:
+- Use the web interface to upload a new SQLite database or select an existing one.
+- Navigate through the apps, development tasks, and development steps to analyze the stored data.
 
-1. Open your web browser and navigate to `http://localhost:3000`.
-2. From the homepage, you can either upload a new SQLite database file or select one from the dropdown of previously uploaded databases.
-3. Upon selection or upload of a database, you can interact with the displayed list of apps and their development tasks and steps.
+## Contributions
 
-## API Endpoints
-
-The server exposes several RESTful API endpoints:
-
-- `POST /upload`: Endpoint to upload a new SQLite database file.
-- `GET /databases`: Retrieve a list of available databases on the server.
-- `GET /apps`: List all the apps from the selected database.
-- `GET /development_plans`: Get the development plans for a specific app based on the app ID.
-- `GET /development_steps`: Retrieve the development steps for a specified development task within an app.
-
-## Contributing
-
-Contributions are welcome. Please feel free to fork the repository, make your changes, and create a pull request.
+- Contributions are welcome. Please read the project's `CONTRIBUTING.md` first (if available).
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` file for more information.
+- This project is open-sourced under the MIT License. See the `LICENSE` file for more details.
