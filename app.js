@@ -3,11 +3,18 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+const bodyParser = require('body-parser');
+const cors = require('cors');
 const developmentPlansRouter = require('./routes/developmentPlans');
 const developmentStepsRouter = require('./routes/developmentSteps');
+const { simulateOpenAIResponse } = require('./openai-handler');
 const app = express();
 
 app.use(express.static('public'));
+
+app.use(bodyParser.json());
+
+app.use(cors());
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -38,7 +45,6 @@ app.post('/upload', upload.single('dbfile'), (req, res) => {
   res.status(400).send(error.message);
 });
 
-// Added /databases endpoint to list available databases
 app.get('/databases', (req, res) => {
   const uploadDir = 'uploads';
   fs.readdir(uploadDir, (err, files) => {
@@ -53,7 +59,6 @@ app.get('/databases', (req, res) => {
   });
 });
 
-// New /apps endpoint to list all apps from a selected database
 app.get('/apps', (req, res) => {
   const dbName = req.query.db;
   if (!dbName) {
@@ -90,6 +95,19 @@ app.get('/apps', (req, res) => {
 
 app.use(developmentPlansRouter);
 app.use(developmentStepsRouter);
+
+app.post('/submit_messages', (req, res) => {
+  const { messages } = req.body;
+
+  simulateOpenAIResponse(messages)
+    .then(apiResponse => {
+      res.json(apiResponse);
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(503).send('Service unavailable. Could not reach the OpenAI GPT-4 API.');
+    });
+});
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

@@ -1,3 +1,5 @@
+import { insertAfter } from './utils.js';
+
 function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
   const stepsContainer = document.createElement('div');
   stepsContainer.id = 'stepsContainer';
@@ -40,6 +42,7 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
         messageContentElement.value = message.content;
         messageContentElement.classList.add('form-control', 'mb-1', 'message-content');
         messageContentElement.setAttribute('data-index', index);
+        messageContentElement.setAttribute('data-role', message.role); // Ensure role is set properly
 
         const messageRoleLabel = document.createElement('h6');
         messageRoleLabel.textContent = `Role: ${message.role}`;
@@ -98,17 +101,51 @@ function createSubmitButton(stepId) {
   const submitButton = document.createElement('button');
   submitButton.textContent = 'Submit';
   submitButton.classList.add('btn', 'btn-primary', 'mt-2');
+  submitButton.setAttribute('data-step-id', stepId.toString());
   submitButton.addEventListener('click', () => {
     const messageContents = Array.from(document.querySelectorAll(`#collapseStep${stepId} .message-content`)).map(textarea => ({
       content: textarea.value,
-      index: textarea.getAttribute('data-index')
+      role: textarea.getAttribute('data-role')
     }));
-    console.log({
-      stepId: stepId,
-      messages: messageContents
-    });
+    submitMessages(stepId, messageContents);
   });
   return submitButton;
+}
+
+function submitMessages(stepId, messages) {
+  const data = { messages };
+  fetch(`/submit_messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(responseData => {
+    displayOpenAIResponse(stepId, responseData);
+  })
+  .catch(error => {
+    console.error('There was a problem with the fetch operation:', error);
+  });
+}
+
+function displayOpenAIResponse(stepId, responseData) {
+  const stepCollapse = document.querySelector(`#collapseStep${stepId}`);
+  const existingAIResponseTextarea = stepCollapse.querySelector('.ai-response-textarea');
+  if (existingAIResponseTextarea) {
+    existingAIResponseTextarea.remove();
+  }
+  const aiResponse = responseData.choices[0].text;
+  const aiResponseTextarea = document.createElement('textarea');
+  aiResponseTextarea.classList.add('form-control', 'ai-response-textarea', 'mt-2');
+  aiResponseTextarea.disabled = true;
+  aiResponseTextarea.value = aiResponse;
+  const submitButton = stepCollapse.querySelector(`button[data-step-id="${stepId}"]`);
+  insertAfter(aiResponseTextarea, submitButton);
 }
 
 function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
