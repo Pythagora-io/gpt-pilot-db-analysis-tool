@@ -8,3 +8,22 @@
     background-color: #0069d9;
     border-color: #0062cc;
 }
+
+.step-number {
+  font-weight: bold;
+  margin-right: 5px;
+  display: inline-block;
+  min-width: 50px; /* Ensures consistent width for all step numbers */
+}
+
+@media(max-width: 768px) {
+  .step-number {
+    font-size: 0.95em;
+  }
+}
+
+@media(max-width: 576px) {
+  .step-number {
+    font-size: 0.9em;
+  }
+}

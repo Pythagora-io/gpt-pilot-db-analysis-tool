@@ -1,52 +1,57 @@
-# SQLite Database Analysis Tool
+# SQLite_db_analysis_tool
 
-The SQLite Database Analysis Tool is an application designed to provide comprehensive analysis of SQLite databases. It allows users to upload, view, and analyze data stored in SQLite database files.
+The SQLite_db_analysis_tool is a web application designed to facilitate the examination and analysis of SQLite databases. It enables users to upload and manage SQLite database files, providing intuitive interactions to explore the data within.
 
 ## Features
 
-- **Database Upload**: Upload and store SQLite databases on the server for later access.
-- **Database Selection**: Select a database from a dropdown of previously uploaded databases or upload a new one.
-- **Data Interaction**: Interact with uploaded databases to:
-  - View listed apps.
-  - Explore development tasks associated with an app.
-  - Examine development steps within a development task.
-- **Data Presentation**: Display detailed information including prompt paths, messages, responses from language learning models (LLMs), and prompt data.
+- Users can upload SQLite database files, which are stored on the server for future sessions.
+- A frontend interface allows for easy management and selection of uploaded databases.
+- The application displays apps, development tasks, and development steps in a hierarchical structure.
+- Ability to explore the chain of development steps for each task within an app.
 
-## Prerequisites
+## Database Schema
 
-- Node.js
-- npm package manager
+The SQLite database follows a consistent structure:
 
-## Local Setup
+- **app**: Stores details of each app.
+- **development_planning**: Holds the development tasks for each app.
+- **development_steps**: Contains the progression of development steps associated with each app.
 
-1. Clone this repository to your local machine.
-2. Install dependencies with `npm install`.
-3. Start the application using `npm start`. The application will be available at `http://localhost:3000`.
+## Installation and Setup
 
-## Project Structure
+To get started with the SQLite_db_analysis_tool:
 
-- The SQLite database should have the following tables:
-  - `app`
-  - `development_planning`
-  - `development_steps`
-
-## API Reference
-
-- `POST /upload`: Upload a SQLite database file.
-- `GET /databases`: List available databases.
-- `GET /apps`: List all apps from a database.
-- `GET /development_plans`: Get development plans for an app based on its ID.
-- `GET /development_steps`: Retrieve development steps for a specific development task.
+1. Ensure you have Node.js and npm installed.
+2. Clone the project repository.
+3. Navigate to the project directory and run `npm install` to install dependencies.
+4. Start the server using `npm start` command.
 
 ## Usage
 
-- Use the web interface to upload a new SQLite database or select an existing one.
-- Navigate through the apps, development tasks, and development steps to analyze the stored data.
+Upon running the server, the web application will be accessible at `http://localhost:3000`. Users can select or upload SQLite databases and interact with the contained data through the web interface.
+
+## API Endpoints
+
+The application provides a set of RESTful endpoints to handle database interactions:
+
+- `POST /upload`: Endpoint to upload new SQLite database files.
+- `GET /databases`: Retrieves a list of uploaded SQLite database files.
+- `GET /apps`: Fetches the list of apps from the selected database.
+- `GET /development_plans`: Obtains development plans for a specific app.
+- `GET /development_steps`: Retrieves the development steps for a selected development task.
 
 ## Contributions
 
-- Contributions are welcome. Please read the project's `CONTRIBUTING.md` first (if available).
+Contributions to this project are welcome. Before submitting any changes, please review the project's contribution guidelines.
 
 ## License
 
-- This project is open-sourced under the MIT License. See the `LICENSE` file for more details.
+This project is released under the terms of the MIT License.
+
+## Acknowledgments
+
+- SQLite
+- Express.js
+- Node.js
+
+_This documentation is intended for the current state of the SQLite_db_analysis_tool project as of the knowledge cutoff in early 2023._

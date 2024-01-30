@@ -24,7 +24,12 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
     promptPathButton.setAttribute('data-target', `#collapseStep${step.id}`);
     promptPathButton.setAttribute('aria-expanded', 'false');
     promptPathButton.setAttribute('aria-controls', `collapseStep${step.id}`);
-    promptPathButton.textContent = `Step ${step.id}: ${step.prompt_path}`;
+    const stepNumberSpan = document.createElement('span');
+    stepNumberSpan.classList.add('step-number');
+    stepNumberSpan.textContent = `Step ${step.id}:`;
+    promptPathButton.appendChild(stepNumberSpan);
+    const stepTitleText = document.createTextNode(` ${step.prompt_path}`);
+    promptPathButton.appendChild(stepTitleText);
     promptPathButton.classList.add('card-title');
     cardBody.appendChild(promptPathButton);
     
