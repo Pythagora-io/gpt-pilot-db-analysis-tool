@@ -1,6 +1,6 @@
 import { insertAfter } from './utils.js';
-import { copyToClipboard as copyToClipboardUtil } from './clipboard-utils.js';
-import { showBootstrapToast } from './toast.js';
+import { copyToClipboard } from './clipboard-operations.js';
+import { showToast } from './toast-notifications.js';
 
 function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
   console.log('Displaying development steps');
@@ -109,11 +109,10 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
             llm_response: llmResponse,
             prompt_data: promptData
           };
-          copyToClipboardUtil(stepData);
-          console.log('Successfully copied step data to clipboard');
+          copyToClipboard(stepData);
         } catch (error) {
-          console.error('Copy to clipboard failed:', error);
-          showBootstrapToast('Failed to copy step data. ' + error.message, 'danger');
+          console.error('Copy to clipboard failed with trace:', error);
+          showToast('Failed to copy step data. ' + error.message, 'danger');
         }
       });
       messagesContainer.appendChild(copyConversationButton);

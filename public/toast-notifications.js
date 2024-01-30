@@ -1,11 +1,30 @@
 export function showToast(message, type) {
-  const toastContainer = document.getElementById('toastContainer') || createToastContainer();
-  const toast = createToast(message, type);
-  toastContainer.appendChild(toast);
-  
-  // Initialize the toast instance using Bootstrap's JavaScript and show it.
-  const toastInstance = new bootstrap.Toast(toast);
-  toastInstance.show();
+  try {
+    let toastContainer = document.getElementById('toastContainer');
+
+    if (!toastContainer) {
+      toastContainer = createToastContainer();
+      try {
+        document.body.appendChild(toastContainer);
+        console.log('Toast container appended to body.');
+      } catch (err) {
+        console.error('Error appending toast container:', err.stack || err);
+      }
+    }
+
+    const toast = createToast(message, type);
+    toastContainer.appendChild(toast);
+
+    // Initialize the toast instance using Bootstrap's JavaScript and show it.
+    const toastInstance = new bootstrap.Toast(toast);
+    toastInstance.show();
+
+    toast.addEventListener('hidden.bs.toast', () => {
+      toastContainer.removeChild(toast);
+    });
+  } catch (err) {
+    console.error('Error showing toast notification:', err.stack || err);
+  }
 }
 
 function createToast(message, type) {
@@ -14,7 +33,7 @@ function createToast(message, type) {
   toast.role = 'alert';
   toast.ariaLive = 'assertive';
   toast.ariaAtomic = 'true';
-  
+
   const toastBody = document.createElement('div');
   toastBody.className = 'd-flex';
 
@@ -40,6 +59,5 @@ function createToastContainer() {
   container.id = 'toastContainer';
   container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
   container.style.zIndex = '11'; // Ensure toasts are above modal overlays which usually have a z-index of 10.
-  document.body.appendChild(container);
   return container;
 }

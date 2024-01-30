@@ -9,6 +9,12 @@
 </head>
 <body>
 
+<div aria-live="polite" aria-atomic="true" class="position-relative">
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <!-- Toasts will be added dynamically here -->
+  </div>
+</div>
+
 <div class="container mt-3">
   <div class="row">
     <div class="col-md-6 mb-3">
@@ -46,6 +52,7 @@
 <script type="module" src="database-selection.js"></script>
 <script type="module" src="upload-handler.js"></script>
 <script type="module" src="development-steps.js"></script>
+<script type="module" src="toast-container-init.js"></script>
 <script type="module" src="toast-notifications.js"></script>
 </body>
 </html>
