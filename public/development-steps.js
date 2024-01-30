@@ -10,7 +10,7 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
   heading.textContent = 'Development Steps';
   stepsContainer.appendChild(heading);
 
-  developmentSteps.forEach((step) => {
+  developmentSteps.forEach((step, index) => {
     const stepItemContainer = document.createElement('div');
     stepItemContainer.classList.add('card', 'mb-3');
     const cardBody = document.createElement('div');
@@ -24,7 +24,7 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
     promptPathButton.setAttribute('data-target', `#collapseStep${step.id}`);
     promptPathButton.setAttribute('aria-expanded', 'false');
     promptPathButton.setAttribute('aria-controls', `collapseStep${step.id}`);
-    promptPathButton.textContent = step.prompt_path;
+    promptPathButton.textContent = `Step ${step.id}: ${step.prompt_path}`;
     promptPathButton.classList.add('card-title');
     cardBody.appendChild(promptPathButton);
     
