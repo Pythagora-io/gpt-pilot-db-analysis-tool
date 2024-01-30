@@ -1,6 +1,9 @@
 import { insertAfter } from './utils.js';
+import { copyToClipboard as copyToClipboardUtil } from './clipboard-utils.js';
+import { showBootstrapToast } from './toast.js';
 
 function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
+  console.log('Displaying development steps');
   const stepsContainer = document.createElement('div');
   stepsContainer.id = 'stepsContainer';
   stepsContainer.classList.add('mt-3');
@@ -11,6 +14,7 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
   stepsContainer.appendChild(heading);
 
   developmentSteps.forEach((step, index) => {
+    console.log(`Processing step ${index + 1}`);
     const stepItemContainer = document.createElement('div');
     stepItemContainer.classList.add('card', 'mb-3');
     const cardBody = document.createElement('div');
@@ -37,33 +41,15 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
     collapseDiv.id = `collapseStep${step.id}`;
     collapseDiv.classList.add('collapse');
     
-    // Parse messages if it is a string
-    const messages = typeof step.messages === 'string' ? JSON.parse(step.messages) : step.messages;
-    if (messages) {
-      const messagesContainer = document.createElement('div');
-      messagesContainer.classList.add('mb-2');
-      messages.forEach((message, index) => {
-        const messageContentElement = document.createElement('textarea');
-        messageContentElement.value = message.content;
-        messageContentElement.classList.add('form-control', 'mb-1', 'message-content');
-        messageContentElement.setAttribute('data-index', index);
-        messageContentElement.setAttribute('data-role', message.role || 'user'); // Set 'user' as default role if missing
-
-        const messageRoleLabel = document.createElement('h6');
-        messageRoleLabel.textContent = `Role: ${message.role}`;
-        messageRoleLabel.classList.add('mb-1');
-
-        messagesContainer.appendChild(messageRoleLabel);
-        messagesContainer.appendChild(messageContentElement);
-      });
-
-      const submitButton = createSubmitButton(step.id);
-      messagesContainer.appendChild(submitButton);
-      collapseDiv.appendChild(messagesContainer);
-    }
-    
     // Parse llm_response if it is a string
-    const llmResponse = typeof step.llm_response === 'string' ? JSON.parse(step.llm_response) : step.llm_response;
+    let llmResponse;
+    try {
+      llmResponse = typeof step.llm_response === 'string' ? JSON.parse(step.llm_response) : step.llm_response;
+    } catch (err) {
+      console.error(`An error occurred while parsing llm_response for step ${step.id}:`, err);
+      llmResponse = {};
+    }
+
     if (llmResponse) {
       const llmResponseTextTitle = document.createElement('h6');
       llmResponseTextTitle.textContent = 'LLM Response:';
@@ -75,8 +61,82 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
       collapseDiv.appendChild(llmResponseTextArea);
     }
 
+    // Parse messages if it is a string
+    let messages;
+    try {
+      messages = typeof step.messages === 'string' ? JSON.parse(step.messages) : step.messages;
+    } catch (err) {
+      console.error(`An error occurred while parsing messages for step ${step.id}:`, err);
+      messages = [];
+    }
+    
+    const messagesContainer = document.createElement('div');
+    messagesContainer.classList.add('mb-2');
+    if (messages && messages.length > 0) {
+      messages.forEach((message, messageIndex) => {
+        const messageContentElement = document.createElement('textarea');
+        messageContentElement.value = message.content;
+        messageContentElement.classList.add('form-control', 'mb-1', 'message-content');
+        messageContentElement.setAttribute('data-index', messageIndex);
+        messageContentElement.setAttribute('data-role', message.role || 'user'); // Set 'user' as default role if missing
+      
+        const messageRoleLabel = document.createElement('h6');
+        messageRoleLabel.textContent = `Role: ${message.role}`;
+        messageRoleLabel.classList.add('mb-1');
+      
+        messagesContainer.appendChild(messageRoleLabel);
+        messagesContainer.appendChild(messageContentElement);
+      });
+
+      let promptData;
+      try {
+        promptData = typeof step.prompt_data === 'string' ? JSON.parse(step.prompt_data) : step.prompt_data;
+      } catch (err) {
+        console.error(`An error occurred while parsing prompt_data for step ${step.id}:`, err);
+        promptData = {};
+      }
+      
+      const copyConversationButton = document.createElement('button');
+      copyConversationButton.textContent = 'COPY CONVERSATION';
+      copyConversationButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'copy-conversation-btn');
+      copyConversationButton.disabled = messages.length === 0;
+      copyConversationButton.addEventListener('click', function() {
+        try {
+          console.log('Attempting to copy step data to clipboard');
+          const stepData = {
+            prompt_path: step.prompt_path,
+            messages: messages,
+            llm_response: llmResponse,
+            prompt_data: promptData
+          };
+          copyToClipboardUtil(stepData);
+          console.log('Successfully copied step data to clipboard');
+        } catch (error) {
+          console.error('Copy to clipboard failed:', error);
+          showBootstrapToast('Failed to copy step data. ' + error.message, 'danger');
+        }
+      });
+      messagesContainer.appendChild(copyConversationButton);
+    } else {
+      console.log('No messages to display for this step.');
+      const noMessagesText = document.createElement('p');
+      noMessagesText.textContent = 'No messages available for this step.';
+      messagesContainer.appendChild(noMessagesText);
+    }
+      
+    const submitButton = createSubmitButton(step.id);
+    messagesContainer.appendChild(submitButton);
+    collapseDiv.appendChild(messagesContainer);
+
     // Parse prompt_data if it is a string and add to collapsible div
-    const promptData = typeof step.prompt_data === 'string' ? JSON.parse(step.prompt_data) : step.prompt_data;
+    let promptData;
+    try {
+      promptData = typeof step.prompt_data === 'string' ? JSON.parse(step.prompt_data) : step.prompt_data;
+    } catch (err) {
+      console.error(`An error occurred while parsing prompt_data for step ${step.id}:`, err);
+      promptData = {};
+    }
+
     if (promptData) {
       const promptDataContainer = document.createElement('div');
       promptDataContainer.classList.add('mb-2');
@@ -96,18 +156,22 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
   const appsContainer = document.getElementById('appsContainer');
   const previousStepsContainer = document.getElementById('stepsContainer');
   if (previousStepsContainer) {
+    console.log('Replacing old steps container with new one.');
     appsContainer.replaceChild(stepsContainer, previousStepsContainer);
   } else {
+    console.log('Appending new steps container.');
     appsContainer.appendChild(stepsContainer);
   }
 }
 
 function createSubmitButton(stepId) {
+  console.log(`Creating submit button for stepId: ${stepId}`);
   const submitButton = document.createElement('button');
   submitButton.textContent = 'Submit';
   submitButton.classList.add('btn', 'btn-primary', 'mt-2');
   submitButton.setAttribute('data-step-id', stepId.toString());
   submitButton.addEventListener('click', () => {
+    console.log(`Submit button clicked for stepId: ${stepId}`);
     try {
       const messageContents = Array.from(document.querySelectorAll(`#collapseStep${stepId} .message-content`)).map(textarea => {
         const role = textarea.getAttribute('data-role');
@@ -131,6 +195,7 @@ function createSubmitButton(stepId) {
 }
 
 function submitMessages(stepId, messages) {
+  console.log(`Submitting messages for stepId: ${stepId}`);
   const data = { messages };
   const submitButton = document.querySelector(`button[data-step-id="${stepId}"]`);
   const spinner = showSpinner(stepId, true);
@@ -157,6 +222,7 @@ function submitMessages(stepId, messages) {
     displayOpenAIResponse(stepId, responseData);
   })
   .catch(error => {
+    console.error('Error submitting messages to server:', error);
     showSpinner(stepId, false);
     submitButton.disabled = false;
     displayApiError(error, stepId);
@@ -164,6 +230,7 @@ function submitMessages(stepId, messages) {
 }
 
 function showSpinner(stepId, shouldShow) {
+  console.log(`Showing spinner for stepId: ${stepId}, shouldShow: ${shouldShow}`);
   let spinner = document.querySelector(`#spinner-${stepId}`);
   
   if (shouldShow) {
@@ -186,8 +253,7 @@ function showSpinner(stepId, shouldShow) {
 }
 
 function displayOpenAIResponse(stepId, responseData) {
-  console.log('Response Data:', responseData); // Added for debugging
-  // Combine 'message.content' for all elements of 'choices' array into a single message
+  console.log(`Displaying OpenAI response for stepId: ${stepId}`, responseData);
   let combinedMessage = '';
   if (responseData.choices && responseData.choices.length) {
     combinedMessage = responseData.choices.map(choice => choice.message.content).join("\n");
@@ -195,24 +261,7 @@ function displayOpenAIResponse(stepId, responseData) {
   const aiResponseTextarea = createOrUpdateTextArea(`ai-response-textarea-${stepId}`, combinedMessage, true);
 
   const submitButton = document.querySelector(`button[data-step-id="${stepId}"]`);
-  // Changes start: Ensure correct positioning of the response textarea
-  if (submitButton) {
-    let textareaAfterSubmit = submitButton.nextElementSibling;
-    if (textareaAfterSubmit && textareaAfterSubmit.id === `ai-response-textarea-${stepId}`) {
-      // If textarea exists after the submit button, update it
-      textareaAfterSubmit.value = aiResponse;
-    } else {
-      // If no textarea exists, create it and insert it after the submit button
-      if (textareaAfterSubmit) {
-        // Ensure the new textarea is inserted between the submit button and any subsequent elements
-        submitButton.parentElement.insertBefore(aiResponseTextarea, textareaAfterSubmit);
-      } else {
-        // If submit button is the last child, just append the new textarea
-        submitButton.parentElement.appendChild(aiResponseTextarea);
-      }
-    }
-  }
-  // Changes end
+  insertAfter(aiResponseTextarea, submitButton);
 }
 
 function createOrUpdateTextArea(id, value, disabled) {
@@ -228,18 +277,16 @@ function createOrUpdateTextArea(id, value, disabled) {
 }
 
 function displayApiError(error, stepId) {
+  console.error(`Displaying API error for stepId: ${stepId}`, error);
   const errorMessage = `Error: ${error.message}`;
   const errorTextarea = createOrUpdateTextArea(`ai-response-textarea-${stepId}`, errorMessage, true);
 
   const submitButton = document.querySelector(`button[data-step-id="${stepId}"]`);
-  if (submitButton.nextSibling && submitButton.nextSibling.id === `ai-response-textarea-${stepId}`) {
-    submitButton.nextSibling.value = errorMessage;
-  } else {
-    submitButton.after(errorTextarea);
-  }
+  insertAfter(errorTextarea, submitButton);
 }
 
 function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
+  console.log(`Fetching and displaying development steps for taskIndex: ${taskIndex}, appId: ${appId}`);
   const xhr = new XMLHttpRequest();
   xhr.open('GET', `/development_steps?task_index=${encodeURIComponent(taskIndex)}&app_id=${encodeURIComponent(appId)}&db=${encodeURIComponent(dbName)}`, true);
   xhr.onload = function() {
@@ -251,18 +298,19 @@ function fetchAndDisplayDevelopmentSteps(taskIndex, appId, dbName) {
         displayDevelopmentSteps(response, taskIndex, appId, dbName);
       }
     } else {
-      console.error('Failed to load development steps for the selected task');
+      console.error('Failed to load development steps for the selected task', xhr.statusText);
       displayNoDevelopmentStepsMessage();
     }
   };
-  xhr.onerror = function() {
-    console.error('An error occurred during the Ajax request.');
+  xhr.onerror = function(e) {
+    console.error('An error occurred during the Ajax request.', e);
     displayNoDevelopmentStepsMessage();
   };
   xhr.send();
 }
 
 function displayNoDevelopmentStepsMessage() {
+  console.log('Displaying message: No development steps found for this task.');
   let stepsContainer = document.getElementById('stepsContainer');
   if (!stepsContainer) {
     stepsContainer = document.createElement('div');
