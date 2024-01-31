@@ -54,25 +54,9 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
       const llmResponseTextTitle = document.createElement('h6');
       llmResponseTextTitle.textContent = 'LLM Response:';
       llmResponseTextTitle.classList.add('mb-1');
-      const llmResponseTextArea = document.createElement('textarea');
-      llmResponseTextArea.value = llmResponse.text;
-      llmResponseTextArea.classList.add('form-control');
       collapseDiv.appendChild(llmResponseTextTitle);
-      collapseDiv.appendChild(llmResponseTextArea);
-    
-      const llmResponseCopyButton = document.createElement('button');
-      llmResponseCopyButton.textContent = 'Copy';
-      llmResponseCopyButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'ml-2');
-      llmResponseCopyButton.addEventListener('click', function() {
-       try {
-         copyToClipboard(llmResponseTextArea.value);
-         console.log('LLM Response copied to clipboard.');
-       } catch (error) {
-         console.error('Error copying LLM response:', error.stack || error);
-         showToast('Failed to copy data', 'danger');
-       }
-      });
-      llmResponseTextArea.parentNode.insertBefore(llmResponseCopyButton, llmResponseTextArea.nextSibling);
+
+      createTextareaWithCopyButton(collapseDiv, llmResponse.text, step.id);
     }
 
     // Parse messages if it is a string
@@ -88,32 +72,12 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
     messagesContainer.classList.add('mb-2');
     if (messages && messages.length > 0) {
       messages.forEach((message, messageIndex) => {
-        const messageContentElement = document.createElement('textarea');
-        messageContentElement.value = message.content;
-        messageContentElement.classList.add('form-control', 'mb-1', 'message-content');
-        messageContentElement.setAttribute('data-index', messageIndex);
-        messageContentElement.setAttribute('data-role', message.role || 'user'); // Set 'user' as default role if missing
-      
         const messageRoleLabel = document.createElement('h6');
         messageRoleLabel.textContent = `Role: ${message.role}`;
         messageRoleLabel.classList.add('mb-1');
-      
         messagesContainer.appendChild(messageRoleLabel);
-        messagesContainer.appendChild(messageContentElement);
-        
-        const copyButton = document.createElement('button');
-        copyButton.textContent = 'Copy';
-        copyButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'ml-2');
-        copyButton.addEventListener('click', function() {
-         try {
-           copyToClipboard(messageContentElement.value);
-           console.log(`Message content copied to clipboard from message index: ${messageIndex}.`);
-         } catch (error) {
-           console.error('Error copying message content:', error.stack || error);
-           showToast('Failed to copy data', 'danger');
-         }
-        });
-        messageContentElement.parentNode.insertBefore(copyButton, messageContentElement.nextSibling);
+
+        createTextareaWithCopyButton(messagesContainer, message.content, step.id, message.role);
       });
 
       const copyConversationButton = document.createElement('button');
@@ -131,7 +95,6 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
           const stepDataString = JSON.stringify(stepData, null, 2); // Convert the object to a JSON string
           copyToClipboard(stepDataString);
         } catch (error) {
-          console.error('Error during copying conversation:', error); // gpt_pilot_debugging_log
           showToast('Failed to copy step data. ' + error.message, 'danger');
         }
       });
@@ -263,6 +226,28 @@ function displayOpenAIResponse(stepId, responseData) {
 
   const submitButton = document.querySelector(`button[data-step-id="${stepId}"]`);
   insertAfter(aiResponseTextarea, submitButton);
+}
+
+function createTextareaWithCopyButton(containerElement, textValue, stepId, role = 'user') {
+  const textarea = document.createElement('textarea');
+  textarea.value = textValue;
+  textarea.classList.add('form-control', 'mb-1', 'message-content');
+  textarea.setAttribute('data-role', role);
+  containerElement.appendChild(textarea);
+
+  const copyButton = document.createElement('button');
+  copyButton.textContent = 'Copy';
+  copyButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'ml-2');
+  copyButton.addEventListener('click', function() {
+    try {
+      copyToClipboard(textarea.value);
+      console.log(`Content of role ${role} copied to clipboard from step id ${stepId}.`);
+    } catch (error) {
+      console.error(`Error copying content from step id ${stepId}:`, error.stack || error);
+      showToast('Failed to copy data', 'danger');
+    }
+  });
+  containerElement.appendChild(copyButton);
 }
 
 function createOrUpdateTextArea(id, value, disabled) {

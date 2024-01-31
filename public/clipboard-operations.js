@@ -2,38 +2,28 @@ import { showToast } from './toast-notifications.js';
 
 export function copyToClipboard(text) {
   if (navigator.clipboard && window.isSecureContext) {
-    try {
-      navigator.clipboard.writeText(text).then(function() {
-        console.log('Content copied to clipboard.');
-        showToast('Copied to clipboard!', 'success');
-      }).catch(function(err) {
-        console.error('Failed to copy using Clipboard API:', err.stack || err);
-        showToast('Failed to copy to clipboard!', 'danger');
-      });
-    } catch (err) {
-      console.error('Clipboard API is present, but an error occurred:', err.stack || err);
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Copied to clipboard!', 'success');
+      console.log('Content copied to clipboard.');
+    }).catch((err) => {
       showToast('Failed to copy to clipboard!', 'danger');
-    }
+      console.error('Failed to copy using Clipboard API:', err);
+    });
   } else {
     const textArea = document.createElement('textarea');
     textArea.value = text;
     document.body.appendChild(textArea);
+    textArea.focus();
     textArea.select();
     try {
       const successful = document.execCommand('copy');
-      console.log(successful ? 'Content copied to clipboard using execCommand.' : 'Failed copy operation using execCommand.');
       showToast(successful ? 'Copied to clipboard!' : 'Copy failed!', successful ? 'success' : 'danger');
+      console.log(successful ? 'Copied content using execCommand.' : 'Copy using execCommand failed.');
     } catch (err) {
-      console.error('Fallback method for copy failed:', err.stack || err);
-      showToast('Copy failed!', 'danger');
+      showToast('Failed to copy to clipboard!', 'danger');
+      console.error('Fallback for Clipboard API failed:', err);
     } finally {
       document.body.removeChild(textArea);
     }
   }
-}
-
-export function attachCopyButtonEvent(button, text) {
-  button.addEventListener('click', function() {
-    copyToClipboard(text);
-  });
 }
