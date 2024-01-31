@@ -27,3 +27,31 @@
     font-size: 0.9em;
   }
 }
+
+/* Styles for features list */
+.features-list .feature-container {
+  border: 1px solid #007bff;
+  background-color: #e9ecef;
+  border-radius: 0.25rem;
+}
+
+.features-list .feature-header {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+}
+
+.features-list .feature-collapse {
+  padding: 1rem;
+}
+
+.features-list .development-tasks-placeholder {
+  color: #6c757d;
+  text-align: center;
+  padding: 1rem;
+}

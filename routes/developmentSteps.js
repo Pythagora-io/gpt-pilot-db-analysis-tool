@@ -2,6 +2,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
+const { getFeaturesByAppId } = require('../handlers/features-handler');
 
 const router = express.Router();
 
@@ -107,6 +108,35 @@ router.get('/development_step', (req, res) => {
   db.close((err) => {
     if (err) console.error('Error closing database: ' + err.message);
   });
+});
+
+// New endpoint for fetching features
+router.get('/features', async (req, res) => {
+  console.log('Received request to fetch features');
+  const appId = req.query.app_id;
+  const dbName = req.query.db;
+
+  if (!appId || !dbName) {
+    console.error('App ID and database name are required');
+    return res.status(400).send('App ID and database name are required');
+  }
+
+  try {
+    const features = await getFeaturesByAppId(appId, dbName);
+    if (features.length === 0) {
+      console.log(`No features found for app ID ${appId}`);
+    } else {
+      console.log(`Fetched features for app ID ${appId}`);
+    }
+    res.json(features);
+  } catch (error) {
+    console.error('Error fetching features:', error.stack || error);
+    if (error.message.includes('Database file not found')) {
+      res.status(404).send('Database file not found');
+    } else {
+      res.status(500).send('Error fetching features');
+    }
+  }
 });
 
 module.exports = router;
