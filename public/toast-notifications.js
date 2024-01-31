@@ -1,26 +1,27 @@
 export function showToast(message, type) {
   try {
-    let toastContainer = document.getElementById('toastContainer');
-
+    let toastContainer = document.querySelector('.toast-container');
     if (!toastContainer) {
       toastContainer = createToastContainer();
-      try {
-        document.body.appendChild(toastContainer);
-        console.log('Toast container appended to body.');
-      } catch (err) {
-        console.error('Error appending toast container:', err.stack || err);
-      }
+      document.body.appendChild(toastContainer);
+    }
+
+    let existingToast = toastContainer.querySelector('.toast.show');
+    if (existingToast) {
+      console.log('Hiding existing toast message.');
+      const existingToastInstance = bootstrap.Toast.getInstance(existingToast);
+      existingToastInstance.hide();
     }
 
     const toast = createToast(message, type);
     toastContainer.appendChild(toast);
-
-    // Initialize the toast instance using Bootstrap's JavaScript and show it.
+    console.log('Displaying new toast message.');
     const toastInstance = new bootstrap.Toast(toast);
     toastInstance.show();
 
     toast.addEventListener('hidden.bs.toast', () => {
       toastContainer.removeChild(toast);
+      console.log('Toast message closed.');
     });
   } catch (err) {
     console.error('Error showing toast notification:', err.stack || err);

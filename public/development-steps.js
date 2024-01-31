@@ -59,6 +59,20 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
       llmResponseTextArea.classList.add('form-control');
       collapseDiv.appendChild(llmResponseTextTitle);
       collapseDiv.appendChild(llmResponseTextArea);
+    
+      const llmResponseCopyButton = document.createElement('button');
+      llmResponseCopyButton.textContent = 'Copy';
+      llmResponseCopyButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'ml-2');
+      llmResponseCopyButton.addEventListener('click', function() {
+       try {
+         copyToClipboard(llmResponseTextArea.value);
+         console.log('LLM Response copied to clipboard.');
+       } catch (error) {
+         console.error('Error copying LLM response:', error.stack || error);
+         showToast('Failed to copy data', 'danger');
+       }
+      });
+      llmResponseTextArea.parentNode.insertBefore(llmResponseCopyButton, llmResponseTextArea.nextSibling);
     }
 
     // Parse messages if it is a string
@@ -86,6 +100,20 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
       
         messagesContainer.appendChild(messageRoleLabel);
         messagesContainer.appendChild(messageContentElement);
+        
+        const copyButton = document.createElement('button');
+        copyButton.textContent = 'Copy';
+        copyButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'ml-2');
+        copyButton.addEventListener('click', function() {
+         try {
+           copyToClipboard(messageContentElement.value);
+           console.log(`Message content copied to clipboard from message index: ${messageIndex}.`);
+         } catch (error) {
+           console.error('Error copying message content:', error.stack || error);
+           showToast('Failed to copy data', 'danger');
+         }
+        });
+        messageContentElement.parentNode.insertBefore(copyButton, messageContentElement.nextSibling);
       });
 
       const copyConversationButton = document.createElement('button');
