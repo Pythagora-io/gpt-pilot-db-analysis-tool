@@ -127,7 +127,7 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
     messagesContainer.appendChild(submitButton);
     collapseDiv.appendChild(messagesContainer);
 
-    // Parse prompt_data if it is a string and add to collapsible div
+    // Parse prompt_data but do not render, keep for the copy operation
     let promptData;
     try {
       promptData = typeof step.prompt_data === 'string' ? JSON.parse(step.prompt_data) : step.prompt_data;
@@ -136,17 +136,7 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
       promptData = {};
     }
 
-    if (promptData) {
-      const promptDataContainer = document.createElement('div');
-      promptDataContainer.classList.add('mb-2');
-      Object.entries(promptData).forEach(([key, value]) => {
-        const keyValueElement = document.createElement('p');
-        keyValueElement.textContent = `${key}: ${value}`;
-        keyValueElement.classList.add('card-text');
-        promptDataContainer.appendChild(keyValueElement);
-      });
-      collapseDiv.appendChild(promptDataContainer);
-    }
+    console.log('Excluding prompt_data from UI rendering.')
     
     cardBody.appendChild(collapseDiv);
     stepsContainer.appendChild(stepItemContainer);
