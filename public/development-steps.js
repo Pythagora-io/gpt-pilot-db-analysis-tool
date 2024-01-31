@@ -88,30 +88,20 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
         messagesContainer.appendChild(messageContentElement);
       });
 
-      let promptData;
-      try {
-        promptData = typeof step.prompt_data === 'string' ? JSON.parse(step.prompt_data) : step.prompt_data;
-      } catch (err) {
-        console.error(`An error occurred while parsing prompt_data for step ${step.id}:`, err);
-        promptData = {};
-      }
-      
       const copyConversationButton = document.createElement('button');
       copyConversationButton.textContent = 'COPY CONVERSATION';
       copyConversationButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'copy-conversation-btn');
       copyConversationButton.disabled = messages.length === 0;
       copyConversationButton.addEventListener('click', function() {
         try {
-          console.log('Attempting to copy step data to clipboard');
           const stepData = {
             prompt_path: step.prompt_path,
             messages: messages,
             llm_response: llmResponse,
-            prompt_data: promptData
+            prompt_data: step.prompt_data
           };
           copyToClipboard(stepData);
-        } catch (error) {
-          console.error('Copy to clipboard failed with trace:', error);
+        } catch (error) { // Added the catch clause to handle any potential errors
           showToast('Failed to copy step data. ' + error.message, 'danger');
         }
       });
@@ -127,16 +117,8 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
     messagesContainer.appendChild(submitButton);
     collapseDiv.appendChild(messagesContainer);
 
-    // Parse prompt_data but do not render, keep for the copy operation
-    let promptData;
-    try {
-      promptData = typeof step.prompt_data === 'string' ? JSON.parse(step.prompt_data) : step.prompt_data;
-    } catch (err) {
-      console.error(`An error occurred while parsing prompt_data for step ${step.id}:`, err);
-      promptData = {};
-    }
-
-    console.log('Excluding prompt_data from UI rendering.')
+    // prompt_data processing is removed from UI rendering logic
+    // Nothing to render for prompt_data in the UI, it is still copied by copyToClipboard function
     
     cardBody.appendChild(collapseDiv);
     stepsContainer.appendChild(stepItemContainer);

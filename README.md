@@ -1,57 +1,69 @@
 # SQLite_db_analysis_tool
 
-The SQLite_db_analysis_tool is a web application designed to facilitate the examination and analysis of SQLite databases. It enables users to upload and manage SQLite database files, providing intuitive interactions to explore the data within.
+SQLite_db_analysis_tool is a web application designed to allow users to view and analyze data stored in SQLite databases. The tool provides a user-friendly frontend interface for uploading and managing databases, and it supports detailed inspection of database contents.
 
-## Features
+## Project Structure
 
-- Users can upload SQLite database files, which are stored on the server for future sessions.
-- A frontend interface allows for easy management and selection of uploaded databases.
-- The application displays apps, development tasks, and development steps in a hierarchical structure.
-- Ability to explore the chain of development steps for each task within an app.
+The project consists of a Node.js backend and a frontend utilizing HTML, CSS, and JavaScript. The backend is responsible for handling SQLite database file uploads, storage, and data retrieval. It exposes RESTful endpoints to the frontend for these operations.
+
+### Backend
+
+The server is implemented in `app.js`, using the Express framework and includes additional routes defined in the `developmentPlans.js` and `developmentSteps.js` files.
+
+Key features include:
+- Database file upload and storage mechanism.
+- REST API endpoints to list databases, fetch apps, development plans, and steps.
+- Middleware for processing and categorizing development steps based on prompt path.
+
+### Frontend
+
+The frontend is a set of static HTML, CSS, and JavaScript files. Users can select existing databases, upload new ones, and navigate through apps, development plans, and steps.
+
+Key interfaces include:
+- Database selection and upload.
+- Display of apps and their related development details.
+
+Key JavaScript modules responsible for these features are `database-selection.js`, `development-steps.js`, and `upload-handler.js`.
 
 ## Database Schema
 
-The SQLite database follows a consistent structure:
+The SQLite database conforms to a particular schema where `app` contains app details, `development_planning` stores development tasks for apps, and `development_steps` holds individual steps for development tasks.
 
-- **app**: Stores details of each app.
-- **development_planning**: Holds the development tasks for each app.
-- **development_steps**: Contains the progression of development steps associated with each app.
+## Setup and Usage
 
-## Installation and Setup
+To set up the application:
 
-To get started with the SQLite_db_analysis_tool:
+1. Clone the repository.
+2. Run `npm install` to install the required dependencies.
+3. Start the server using `npm start`.
 
-1. Ensure you have Node.js and npm installed.
-2. Clone the project repository.
-3. Navigate to the project directory and run `npm install` to install dependencies.
-4. Start the server using `npm start` command.
+Once the server is running, the front end can be accessed via a web browser to manage and analyze SQLite databases.
 
-## Usage
+## API Reference
 
-Upon running the server, the web application will be accessible at `http://localhost:3000`. Users can select or upload SQLite databases and interact with the contained data through the web interface.
+The backend offers several API endpoints:
 
-## API Endpoints
+- POST `/upload`: Upload a new SQLite database file.
+- GET `/databases`: List all uploaded SQLite database files.
+- GET `/apps`: Get all apps from the selected SQLite database.
+- GET `/development_plans`: Get all development tasks for a specific app.
+- GET `/development_steps`: Get all steps for a particular development task.
 
-The application provides a set of RESTful endpoints to handle database interactions:
+## Dependencies
 
-- `POST /upload`: Endpoint to upload new SQLite database files.
-- `GET /databases`: Retrieves a list of uploaded SQLite database files.
-- `GET /apps`: Fetches the list of apps from the selected database.
-- `GET /development_plans`: Obtains development plans for a specific app.
-- `GET /development_steps`: Retrieves the development steps for a selected development task.
+- `express`
+- `multer` for handling multipart/form-data.
+- `sqlite3` for interacting with SQLite databases.
+- `cors` for enabling CORS.
+- `body-parser` for parsing incoming request bodies.
+- `dotenv` for loading environment variables.
 
-## Contributions
+For the full list of dependencies, refer to `package.json`.
 
-Contributions to this project are welcome. Before submitting any changes, please review the project's contribution guidelines.
+## Contributing
+
+Contributions are welcome. For major changes, please open an issue first to discuss what you would like to change or add.
 
 ## License
 
-This project is released under the terms of the MIT License.
-
-## Acknowledgments
-
-- SQLite
-- Express.js
-- Node.js
-
-_This documentation is intended for the current state of the SQLite_db_analysis_tool project as of the knowledge cutoff in early 2023._
+This project is licensed under the MIT License - see the `LICENSE` file for details.
