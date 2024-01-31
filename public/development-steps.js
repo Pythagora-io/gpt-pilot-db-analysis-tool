@@ -128,8 +128,10 @@ function displayDevelopmentSteps(developmentSteps, taskIndex, appId, dbName) {
             llm_response: llmResponse,
             prompt_data: step.prompt_data
           };
-          copyToClipboard(stepData);
-        } catch (error) { // Added the catch clause to handle any potential errors
+          const stepDataString = JSON.stringify(stepData, null, 2); // Convert the object to a JSON string
+          copyToClipboard(stepDataString);
+        } catch (error) {
+          console.error('Error during copying conversation:', error); // gpt_pilot_debugging_log
           showToast('Failed to copy step data. ' + error.message, 'danger');
         }
       });
