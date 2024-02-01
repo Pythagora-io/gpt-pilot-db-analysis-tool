@@ -14,12 +14,16 @@ function clearDevelopmentViews() {
   removeElementById('stepsHeading');
 }
 
-function clearActiveFromElements(elements) {
-  elements.forEach(element => element.classList.remove('active'));
+// New function to clear the features view
+function clearFeaturesViews() {
+  removeElementById('featuresHeading'); // Remove the features heading element
+  removeElementById('featuresList'); // Remove the features list element
 }
 
+// Updated to clear features views as well
 function fetchAndDisplayApps(databaseName) {
   clearDevelopmentViews();
+  clearFeaturesViews(); // Call the new function to clear features views
   removeElementById('appsList');
 
   const xhr = new XMLHttpRequest();
@@ -29,8 +33,12 @@ function fetchAndDisplayApps(databaseName) {
       const apps = JSON.parse(xhr.responseText);
       displayApps(apps, databaseName);
     } else {
+      console.error('Failed to load apps from the selected database:', xhr.responseText); // Error handling for failed app loading
       alert('Failed to load apps from the selected database');
     }
+  };
+  xhr.onerror = function(e) {
+    console.error('Network error occurred when trying to fetch apps:', e); // Error handling for network error
   };
   xhr.send();
 }
@@ -60,6 +68,7 @@ function displayApps(apps, databaseName) {
     appItem.addEventListener('click', function() {
       clearActiveFromElements(Array.from(document.getElementsByClassName('app-item')));
       clearDevelopmentViews();
+      clearFeaturesViews(); // Clear features views when an app item is clicked
       appItem.classList.add('active');
       fetchAndDisplayDevelopmentTasks(app.id, databaseName);
     });
@@ -68,10 +77,14 @@ function displayApps(apps, databaseName) {
   appsContainer.appendChild(appsList);
 }
 
-export function highlightSelectedItem(itemSelector, activeClass) {
+function clearActiveFromElements(elements) {
+  elements.forEach(element => element.classList.remove('active'));
+}
+
+function highlightSelectedItem(itemSelector, activeClass) {
   const elements = document.querySelectorAll(itemSelector);
   clearActiveFromElements(elements);
   this.classList.add(activeClass);
 }
 
-export { fetchAndDisplayApps, fetchAndDisplayDevelopmentTasks };
+export { fetchAndDisplayApps, fetchAndDisplayDevelopmentTasks, clearDevelopmentViews, clearFeaturesViews, highlightSelectedItem };
