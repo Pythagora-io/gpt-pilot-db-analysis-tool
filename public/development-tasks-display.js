@@ -103,22 +103,35 @@ export function displayFeatures(features, dbName) {
       collapseContent.id = `collapseFeature${index}`;
       collapseContent.classList.add('collapse', 'feature-collapse');
 
-      const developmentTasksPlaceholder = document.createElement('div');
-      developmentTasksPlaceholder.classList.add('development-tasks-placeholder');
-      developmentTasksPlaceholder.textContent = 'Development tasks will be listed here...';
-      collapseContent.appendChild(developmentTasksPlaceholder);
+      const developmentTasksList = document.createElement('ul');
+      developmentTasksList.classList.add('list-group', 'development-tasks-list');
 
+      if (Array.isArray(feature.development_tasks) && feature.development_tasks.length > 0) {
+        feature.development_tasks.forEach(task => {
+          const developmentTaskItem = document.createElement('li');
+          developmentTaskItem.classList.add('list-group-item');
+          developmentTaskItem.textContent = task.description; // Assuming 'description' is the correct property
+          developmentTasksList.appendChild(developmentTaskItem);
+        });
+      } else {
+        const noTasksItem = document.createElement('li');
+        noTasksItem.classList.add('list-group-item');
+        noTasksItem.textContent = 'No development tasks available for this feature.';
+        developmentTasksList.appendChild(noTasksItem);
+        // gpt_pilot_debugging_log
+        console.log('No development tasks available for this feature:', feature.description);
+      }
+
+      collapseContent.appendChild(developmentTasksList);
       featureContainer.appendChild(featureHeader);
       featureContainer.appendChild(collapseContent);
       featuresList.appendChild(featureContainer);
-
-      console.log(`Setting up feature collapse for ID #collapseFeature${index}`, feature); // gpt_pilot_debugging_log
     });
 
     appsContainer.appendChild(featuresList);
-    console.log('Features have been rendered.'); // gpt_pilot_debugging_log
   } catch (error) {
-    console.error('Error displaying features:', error.stack || error); // gpt_pilot_debugging_log
+    // gpt_pilot_debugging_log
+    console.error('Failed to display features. Error:', error.message, error.stack);
     alert('Failed to display features. Please check the console for more details.');
   }
 }
