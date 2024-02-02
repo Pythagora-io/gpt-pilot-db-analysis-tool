@@ -44,7 +44,7 @@ export function displayNoDevelopmentStepsMessage() {
     stepsContainer = document.createElement('div');
     stepsContainer.id = 'stepsContainer';
     stepsContainer.classList.add('mt-3');
-  
+
     const heading = document.createElement('h3');
     heading.textContent = 'Development Steps';
     stepsContainer.appendChild(heading);
@@ -54,7 +54,7 @@ export function displayNoDevelopmentStepsMessage() {
   }
 
   stepsContainer.innerHTML = '';
-  
+
   const heading = document.createElement('h3');
   heading.textContent = 'Development Steps';
   stepsContainer.appendChild(heading);
@@ -65,7 +65,7 @@ export function displayNoDevelopmentStepsMessage() {
 }
 
 // Function to display features
-export function displayFeatures(features, dbName) {
+export function displayFeatures(features, appId, dbName) {
   try {
     const appsContainer = document.getElementById('appsContainer');
 
@@ -89,40 +89,58 @@ export function displayFeatures(features, dbName) {
       const featureHeader = document.createElement('div');
       featureHeader.classList.add('card-header', 'feature-header');
       featureHeader.textContent = feature.description;
+      featureHeader.dataset.appId = appId;
 
       const collapseButton = document.createElement('button');
       collapseButton.textContent = 'Show Development Tasks';
       collapseButton.classList.add('btn', 'btn-link');
-      collapseButton.setAttribute('data-toggle', 'collapse');
-      collapseButton.setAttribute('data-target', `#collapseFeature${index}`);
-      collapseButton.setAttribute('aria-expanded', 'false');
-      collapseButton.setAttribute('aria-controls', `collapseFeature${index}`);
+      collapseButton.onclick = function(event) {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+
+        const collapseContent = document.getElementById(`collapseFeature${index}`);
+        const isCollapsed = collapseContent.classList.contains('show');
+        collapseButton.textContent = isCollapsed ? 'Show Development Tasks' : 'Hide Development Tasks';
+
+        if (!isCollapsed) {
+          collapseContent.textContent = 'Loading development tasks...'; // gpt_pilot_debugging_log
+          fetch(`/features_development_plans?feature_index=${encodeURIComponent(index)}&app_id=${encodeURIComponent(appId)}&db=${encodeURIComponent(dbName)}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error ${response.status} when fetching development plans for feature index: ${index}`);
+            }
+            return response.json();
+          })
+          .then(developmentPlans => {
+            if (!developmentPlans || !Array.isArray(developmentPlans)) {
+              console.error(`Unexpected format for development plans. Expected an array but received:`, developmentPlans); // gpt_pilot_debugging_log
+              throw new Error(`Unexpected format for development plans. Expected an array but received: ${typeof developmentPlans}`);
+            }
+            const relatedTasks = feature.development_tasks || []; // Modified as per instruction
+            collapseContent.innerHTML = '';
+            relatedTasks.forEach(task => {
+              const taskItem = document.createElement('div');
+              taskItem.textContent = task.description;
+              taskItem.classList.add('list-group-item', 'feature-task');
+              collapseContent.appendChild(taskItem);
+            });
+            collapseContent.classList.add('show');
+          })
+          .catch(error => {
+            console.error('Failed to fetch development plans:', error, error.stack); // gpt_pilot_debugging_log
+            collapseContent.textContent = 'Failed to load development tasks for this feature.';
+          });
+        } else {
+          collapseContent.classList.remove('show');
+        }
+      };
+
       featureHeader.appendChild(collapseButton);
 
       const collapseContent = document.createElement('div');
       collapseContent.id = `collapseFeature${index}`;
       collapseContent.classList.add('collapse', 'feature-collapse');
 
-      const developmentTasksList = document.createElement('ul');
-      developmentTasksList.classList.add('list-group', 'development-tasks-list');
-
-      if (Array.isArray(feature.development_tasks) && feature.development_tasks.length > 0) {
-        feature.development_tasks.forEach(task => {
-          const developmentTaskItem = document.createElement('li');
-          developmentTaskItem.classList.add('list-group-item');
-          developmentTaskItem.textContent = task.description; // Assuming 'description' is the correct property
-          developmentTasksList.appendChild(developmentTaskItem);
-        });
-      } else {
-        const noTasksItem = document.createElement('li');
-        noTasksItem.classList.add('list-group-item');
-        noTasksItem.textContent = 'No development tasks available for this feature.';
-        developmentTasksList.appendChild(noTasksItem);
-        // gpt_pilot_debugging_log
-        console.log('No development tasks available for this feature:', feature.description);
-      }
-
-      collapseContent.appendChild(developmentTasksList);
       featureContainer.appendChild(featureHeader);
       featureContainer.appendChild(collapseContent);
       featuresList.appendChild(featureContainer);
@@ -130,8 +148,7 @@ export function displayFeatures(features, dbName) {
 
     appsContainer.appendChild(featuresList);
   } catch (error) {
-    // gpt_pilot_debugging_log
-    console.error('Failed to display features. Error:', error.message, error.stack);
+    console.error('Failed to display features:', error, error.stack); // gpt_pilot_debugging_log
     alert('Failed to display features. Please check the console for more details.');
   }
 }

@@ -46,6 +46,10 @@
   padding: 0.5rem 1rem;
 }
 
+.features-list .feature-header.expanded {
+    background-color: #0062cc; /* darker shade indicating expansion */
+}
+
 .features-list .feature-collapse {
   padding: 1rem;
 }
@@ -54,4 +58,15 @@
   color: #6c757d;
   text-align: center;
   padding: 1rem;
+}
+
+.list-group-item {
+    background-color: #f8f9fa; /* Light grey background as default */
+}
+
+.list-group-item.feature-task {
+    background-color: white; /* white background for feature tasks */
+    border: 1px solid #007bff; /* blue border to match feature header color */
+    margin: 5px;
+    padding: 10px;
 }
