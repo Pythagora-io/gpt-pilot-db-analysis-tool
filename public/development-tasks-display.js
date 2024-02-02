@@ -103,7 +103,6 @@ export function displayFeatures(features, appId, dbName) {
         collapseButton.textContent = isCollapsed ? 'Show Development Tasks' : 'Hide Development Tasks';
 
         if (!isCollapsed) {
-          collapseContent.textContent = 'Loading development tasks...'; // gpt_pilot_debugging_log
           fetch(`/features_development_plans?feature_index=${encodeURIComponent(index)}&app_id=${encodeURIComponent(appId)}&db=${encodeURIComponent(dbName)}`)
           .then(response => {
             if (!response.ok) {
@@ -113,7 +112,6 @@ export function displayFeatures(features, appId, dbName) {
           })
           .then(developmentPlans => {
             if (!developmentPlans || !Array.isArray(developmentPlans)) {
-              console.error(`Unexpected format for development plans. Expected an array but received:`, developmentPlans); // gpt_pilot_debugging_log
               throw new Error(`Unexpected format for development plans. Expected an array but received: ${typeof developmentPlans}`);
             }
             const relatedTasks = feature.development_tasks || []; // Modified as per instruction
@@ -127,7 +125,6 @@ export function displayFeatures(features, appId, dbName) {
             collapseContent.classList.add('show');
           })
           .catch(error => {
-            console.error('Failed to fetch development plans:', error, error.stack); // gpt_pilot_debugging_log
             collapseContent.textContent = 'Failed to load development tasks for this feature.';
           });
         } else {
@@ -148,7 +145,6 @@ export function displayFeatures(features, appId, dbName) {
 
     appsContainer.appendChild(featuresList);
   } catch (error) {
-    console.error('Failed to display features:', error, error.stack); // gpt_pilot_debugging_log
     alert('Failed to display features. Please check the console for more details.');
   }
 }

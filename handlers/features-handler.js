@@ -14,7 +14,6 @@ async function getFeaturesByAppId(appId, dbName) {
       db.close();
       if (err) {
         const errorMessage = `Error reading from database for app_id ${appId}: ${err.message}`;
-        console.error(`Database read error with trace: ${errorMessage}`); // gpt_pilot_debugging_log
         reject(new Error(errorMessage));
         return;
       }
@@ -29,10 +28,8 @@ async function getFeaturesByAppId(appId, dbName) {
             const parsedLlmResponse = JSON.parse(row.llm_response);
             development_tasks = parsedLlmResponse && parsedLlmResponse.text ? JSON.parse(parsedLlmResponse.text).plan : [];
           } catch (innerParseError) {
-            console.error(`Error parsing llm_response for feature description: ${feature_description}: ${innerParseError.message}`, innerParseError.stack); // gpt_pilot_debugging_log
           }
         } catch (parseError) {
-          console.error(`Error parsing prompt_data for app_id ${appId}: ${parseError.message}`, parseError.stack); // gpt_pilot_debugging_log
           reject(parseError);
           return;
         }
